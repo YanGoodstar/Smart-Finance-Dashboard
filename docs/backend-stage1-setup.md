@@ -5,6 +5,7 @@
 - Java 17
 - Maven 3.8+
 - MySQL 8+
+- Execute the schema script manually before starting the application
 
 ## Default database settings
 
@@ -12,7 +13,7 @@
 - Host: `localhost`
 - Port: `3306`
 - Username: `root`
-- Password: `root`
+- Password: `123456`
 
 These defaults can be overridden with:
 
@@ -23,6 +24,12 @@ These defaults can be overridden with:
 - `DB_PASSWORD`
 
 ## Start commands
+
+Initialize the database schema with:
+
+```sql
+source sql/init_schema.sql;
+```
 
 Run tests:
 
