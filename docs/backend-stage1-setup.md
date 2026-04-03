@@ -29,6 +29,7 @@ Initialize a brand new database schema with:
 
 ```sql
 source sql/init_schema.sql;
+source sql/manual_update_v1.sql;
 ```
 
 If your local database was already initialized from the old baseline and you
