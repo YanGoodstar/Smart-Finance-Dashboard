@@ -2,106 +2,133 @@
 
 ## 当前阶段
 
-- 当前阶段：第二阶段导入与分类主链路开发
-- 阶段目标：打通“上传账单文件 -> 解析标准化 -> 自动分类 -> 入库 -> 返回导入结果摘要”后端闭环
+- 当前阶段：第三阶段看板增强、预算预警与多来源导入扩展
+- 阶段目标：打通“微信账单导入 -> 自动分类 -> 交易入库 -> 趋势统计 -> 预算预警 -> 看板提醒”的后端闭环
 - 基线分支：`yan`
 - Agent 分支：
-  - `feature/agent-1-upload-parser`
-  - `feature/agent-2-rule-classification`
+  - `feature/agent-1-stage3-import-source-expansion`
+  - `feature/agent-2-stage3-dashboard-budget-alerts`
 - 当前仓库范围：仅后端
 - 本阶段约束：
-  - 延续第一阶段协作方式，由架构师统一调度双 Agent 并行开发
-  - 优先完成主链路代码与 SQL，不把测试作为首批阻塞项
+  - 延续前两阶段协作方式，由架构师统一调度双 Agent 并行开发
+  - 优先完成主链路代码、局部 SQL 和联调说明，不把测试作为首批阻塞项
   - 共享文件只能在架构师批准后修改
-  - 预算、看板模块在本阶段冻结，不作为默认改动范围
+  - 第三阶段不做前端页面实现，只补齐后端接口与联调能力
 
 ## 第一阶段完成情况
 
-- 已完成后端基础工程、交易查询、预算、规则 CRUD、看板聚合、导入任务跟踪骨架
-- 已完成第一阶段联调与本地 API 冒烟验证
-- 已知第二阶段核心缺口：
-  - 还没有真实文件上传入口
-  - 还没有解析器框架和平台适配器
-  - 还没有导入执行编排与交易批量入库
-  - 还没有默认规则 + 用户规则的自动分类执行链路
+- 已完成后端基础工程、数据库基础模型与核心模块骨架
+- 已完成交易查询、预算 CRUD、规则 CRUD、看板总览基础接口
+- 已完成第一阶段接口联调与本地 API 冒烟验证
 
-## 第二阶段全局任务看板
+## 第二阶段完成情况
+
+- 已完成真实文件上传接口与 `ALIPAY_CSV` 导入主链路
+- 已完成解析器 SPI、标准化交易转换、疑似重复标记与导入摘要回写
+- 已完成默认规则与用户规则自动分类能力，并接入导入流程
+- 已完成第二阶段合并、联调清单执行与 Postman 集合验证
+
+## 第三阶段全局任务看板
 
 | ID | 模块 | 任务 | 负责人 | 分支 | 状态 | 依赖 | 预计耗时 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ARC-21 | 共享契约 | 冻结第二阶段上传接口、分类服务输入输出、未分类语义和疑似重复判定口径 | Architect | `yan` | done | none | 0.25d |
-| ARC-22 | 集成验证 | 复查双分支差异，解决共享契约冲突，完成第二阶段集成构建与联调 | Architect | `yan` | review | A1-24, A2-24 | 0.5d |
-| ARC-23 | 共享 SQL / 文档 | 评估并合并两个 Agent 的局部 SQL、联调文档和运行说明 | Architect | `yan` | todo | A1-24, A2-24 | 0.25d |
-| A1-21 | 上传入口 | 新增账单文件上传接口与导入执行编排入口，完成 multipart 接收、文件校验、导入任务生命周期更新 | Agent-1 | `feature/agent-1-upload-parser` | done | ARC-21 | 0.5d |
-| A1-22 | 解析器 | 建立解析器 SPI / 模板识别骨架，并落地 `ALIPAY_CSV` 解析器与标准化候选 DTO | Agent-1 | `feature/agent-1-upload-parser` | done | A1-21 | 1.0d |
-| A1-23 | 入库执行 | 完成标准化交易入库、疑似重复识别、导入摘要统计回写，并串联 Agent-2 输出的分类服务 | Agent-1 | `feature/agent-1-upload-parser` | done | A1-22, A2-21 | 1.0d |
-| A1-24 | 局部 SQL / 联调 | 输出第二阶段导入模块局部 SQL 与导入联调说明，收口 Agent-1 范围文档 | Agent-1 | `feature/agent-1-upload-parser` | done | A1-23 | 0.5d |
-| A2-21 | 分类契约 | 建立默认规则目录、分类服务接口和输入输出 DTO，冻结供导入链路调用的分类契约 | Agent-2 | `feature/agent-2-rule-classification` | done | ARC-21 | 0.5d |
-| A2-22 | 规则匹配 | 实现默认规则 + 用户规则命中逻辑、优先级排序、启停过滤和未分类回退语义 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-21 | 1.0d |
-| A2-23 | 规则集成 | 将分类服务接入现有 rule 模块服务层，保证新导入交易可复用该能力，且不回刷历史交易 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-22 | 0.75d |
-| A2-24 | 局部 SQL / 联调 | 输出第二阶段规则模块局部 SQL 或种子说明，并补充规则联调说明 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-23 | 0.25d |
+| ARC-31 | 共享契约 | 冻结第三阶段 `WECHAT_CSV`、看板趋势/预算提醒/未分类摘要契约和预算预警等级语义 | Architect | `yan` | todo | none | 0.25d |
+| ARC-32 | 集成验证 | 复查双分支差异，解决共享契约冲突，完成第三阶段集成构建与联调 | Architect | `yan` | todo | A1-34, A2-35 | 0.5d |
+| ARC-33 | 共享 SQL / 文档 | 评估并合并两个 Agent 的局部 SQL、模板说明、联调文档与运行说明 | Architect | `yan` | todo | A1-34, A2-35 | 0.25d |
+| A1-31 | 导入来源扩展 | 扩展上传入口 `sourceType` 校验，新增 `WECHAT_CSV` 支持并接入解析器路由 | Agent-1 | `feature/agent-1-stage3-import-source-expansion` | todo | ARC-31 | 0.5d |
+| A1-32 | 微信解析器 | 落地 `WECHAT_CSV` 解析器与模板说明，完成账单到标准化候选 DTO 的映射 | Agent-1 | `feature/agent-1-stage3-import-source-expansion` | todo | A1-31 | 1.0d |
+| A1-33 | 导入链路复用 | 让微信账单复用现有自动分类、疑似重复识别、交易入库与导入摘要回写主链路 | Agent-1 | `feature/agent-1-stage3-import-source-expansion` | todo | A1-32, A2-34 | 0.75d |
+| A1-34 | 局部 SQL / 联调 | 输出第三阶段导入模块局部 SQL、微信模板样例与导入联调说明 | Agent-1 | `feature/agent-1-stage3-import-source-expansion` | todo | A1-33 | 0.5d |
+| A2-31 | 看板趋势 | 扩展 dashboard 总览接口，新增按天聚合的趋势统计 `trendPoints` | Agent-2 | `feature/agent-2-stage3-dashboard-budget-alerts` | todo | ARC-31 | 0.75d |
+| A2-32 | 未分类摘要 | 扩展 dashboard 总览接口，新增 `unclassifiedSummary`，输出未分类笔数与金额摘要 | Agent-2 | `feature/agent-2-stage3-dashboard-budget-alerts` | todo | A2-31 | 0.5d |
+| A2-33 | 预算预警 | 扩展预算进度返回，新增 `configured` 与 `warningLevel`，实现预算预警等级计算 | Agent-2 | `feature/agent-2-stage3-dashboard-budget-alerts` | todo | ARC-31 | 1.0d |
+| A2-34 | 默认规则扩展 | 为 `WECHAT_CSV` 补充默认分类规则，保证微信新导入交易可复用现有自动分类链路 | Agent-2 | `feature/agent-2-stage3-dashboard-budget-alerts` | todo | A2-31 | 0.5d |
+| A2-35 | 局部 SQL / 联调 | 输出第三阶段 dashboard / budget / rule 局部 SQL 或联调说明收口文件 | Agent-2 | `feature/agent-2-stage3-dashboard-budget-alerts` | todo | A2-32, A2-33, A2-34 | 0.25d |
 
-## 冻结的第二阶段共享契约
+## 冻结的第三阶段共享契约
 
 ### 上传接口契约
 
-- 第二阶段上传入口固定为：`POST /api/import-jobs/upload`
-- 请求方式固定为：`multipart/form-data`
-- 最小请求字段固定为：
+- 上传入口继续固定为：`POST /api/import-jobs/upload`
+- 请求方式继续固定为：`multipart/form-data`
+- 最小请求字段继续固定为：
   - `file`
   - `sourceType`
-- 本轮只要求支持：`ALIPAY_CSV`
+- 第三阶段要求支持：
+  - `ALIPAY_CSV`
+  - `WECHAT_CSV`
 
-### 分类服务输入契约
+### 看板概览契约
 
-- Agent-2 对外提供的分类输入字段冻结为：
-  - `sourceType`
-  - `transactionDate`
-  - `amount`
-  - `direction`
-  - `merchantName`
-  - `summary`
-  - `rawText`
+- `DashboardOverviewResponse` 在现有基础上新增以下返回块：
+  - `trendPoints`
+  - `budgetAlert`
+  - `unclassifiedSummary`
+- `trendPoints` 单项字段冻结为：
+  - `date`
+  - `incomeAmount`
+  - `expenseAmount`
+  - `netAmount`
+- `budgetAlert` 字段冻结为：
+  - `configured`
+  - `warningLevel`
+  - `budgetAmount`
+  - `spentAmount`
+  - `remainingAmount`
+  - `usageRate`
+- `unclassifiedSummary` 字段冻结为：
+  - `hasUnclassified`
+  - `transactionCount`
+  - `incomeAmount`
+  - `expenseAmount`
 
-### 分类服务输出契约
+### 预算预警契约
 
-- 分类输出字段冻结为：
-  - `autoCategory`
+- 第三阶段预算预警等级冻结为：
+  - `NORMAL`
+  - `NEAR_LIMIT`
+  - `OVER_BUDGET`
+- 预警阈值冻结为：
+  - `usageRate < 0.8` -> `NORMAL`
+  - `usageRate >= 0.8 && usageRate < 1.0` -> `NEAR_LIMIT`
+  - `usageRate >= 1.0` -> `OVER_BUDGET`
+- 未配置预算时：
+  - `configured = false`
+  - `warningLevel = null`
+- `BudgetProgressResponse` 顶层新增：
+  - `configured`
+  - `warningLevel`
+- 分类预算进度项新增：
+  - `warningLevel`
+
+### 查询与统计口径
+
+- 趋势统计默认按天聚合
+- 趋势、预算提醒、未分类摘要继续复用现有交易筛选语义：
+  - `page`
+  - `size`
+  - `dateFrom`
+  - `dateTo`
   - `finalCategory`
   - `categorySource`
-- 命中默认规则或用户规则时：
-  - `finalCategory = autoCategory`
-  - `categorySource = AUTO`
-- 未命中任何规则时：
-  - `autoCategory = null`
-  - `finalCategory = 未分类`
-  - `categorySource = UNCLASSIFIED`
-- 人工修正链路继续沿用第一阶段语义：
-  - `categorySource = MANUAL`
-
-### 疑似重复判定口径
-
-- 第二阶段默认疑似重复判定口径冻结为：
-  - `transactionDate`
-  - `amount`
-  - `direction`
-  - `merchantName`
-- 命中上述四元组相同的历史交易时，标记 `suspectedDuplicate = true`
-- 第二阶段只做“疑似重复标记”，不做硬拒绝入库
+  - `keyword`
+- 不在第三阶段新建新的共享交易查询 DTO
 
 ### 历史数据处理边界
 
-- 第二阶段新增规则只影响“后续新导入交易”
-- 第二阶段不做历史交易回刷分类
-- 任何历史回刷能力都必须单独立项，不得在本轮顺手实现
+- 第三阶段新增的微信默认规则只影响“后续新导入交易”
+- 第三阶段不做历史交易回刷分类
+- 第三阶段不做预算历史快照表
+- 第三阶段不做图表缓存表或预计算表
 
 ## 依赖协调规则
 
-1. Agent-2 必须先完成 `A2-21`，架构师确认分类契约后，Agent-1 才能开始 `A1-23` 的最终串联。
-2. Agent-1 可以先搭建上传入口、解析器框架和导入执行骨架，但不能自行发明分类输出字段。
-3. 如果 Agent-1 认为 `transaction_record` 或 `import_job` 必须新增字段，先在局部 SQL 脚本中提出，不得直接改最终共享脚本。
-4. 如果 Agent-2 认为 `category_rule` 表结构不够，需要先发 `CONTRACT_CHANGE`，由架构师判断是否放进第二阶段。
-5. 本阶段预算、看板模块默认冻结，任何触碰都必须先发 `BLOCKER` 或 `CONTRACT_CHANGE`。
+1. 架构师先冻结 `WECHAT_CSV`、看板新增字段和预算预警等级语义，Agent 再开始编码。
+2. Agent-1 可以先完成 `A1-31` 和 `A1-32`，不依赖 Agent-2。
+3. 若微信样例账单需要导入后立即命中默认分类，`A1-33` 的最终联调依赖 `A2-34`。
+4. Agent-2 可以修改 `dashboard`、`budget`、`rule` 模块，但不得直接改 `TransactionQueryRequest.java`、`TransactionRecord.java` 或 `transaction/enums/**`；如确需调整，必须先发 `CONTRACT_CHANGE`。
+5. Agent-1 可以修改 `importjob`、`transaction` 模块，但不得直接改 `rule`、`budget`、`dashboard` 模块。
+6. 如果任一 Agent 认为需要新增共享 SQL 或改最终 schema，先在局部 SQL 中提出，不得直接修改 `sql/init_schema.sql`。
 
 ## 通信协议
 
@@ -131,8 +158,8 @@ Requested By: <date-time>
 
 ## 执行说明
 
-- Agent-1 负责上传、解析、标准化、入库、导入摘要与疑似重复标记。
-- Agent-2 负责默认规则、用户规则匹配、未分类回退和分类服务契约。
+- Agent-1 负责导入来源扩展、微信 CSV 解析、标准化、入库复用与模板联调说明。
+- Agent-2 负责看板趋势、未分类提醒、预算预警和微信默认规则扩展。
 - 架构师负责共享文件、契约冻结、最终合并和冲突仲裁。
 - 未经锁移交批准，任何 Agent 不得修改：
   - `pom.xml`
