@@ -25,10 +25,17 @@ These defaults can be overridden with:
 
 ## Start commands
 
-Initialize the database schema with:
+Initialize a brand new database schema with:
 
 ```sql
 source sql/init_schema.sql;
+```
+
+If your local database was already initialized from the old baseline and you
+only need this round's incremental changes, execute:
+
+```sql
+source sql/manual_update_v1.sql;
 ```
 
 Run tests:
