@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class ImportJobUploadService {
@@ -101,10 +102,10 @@ public class ImportJobUploadService {
             throw new IllegalArgumentException("sourceType is required");
         }
         String normalized = sourceType.trim();
-        if (!ImportSourceTypes.ALIPAY_CSV.equalsIgnoreCase(normalized)) {
-            throw new IllegalArgumentException("Only ALIPAY_CSV is supported");
+        if (!ImportSourceTypes.isSupported(normalized)) {
+            throw new IllegalArgumentException("Only ALIPAY_CSV and WECHAT_CSV are supported");
         }
-        return ImportSourceTypes.ALIPAY_CSV;
+        return normalized.toUpperCase(Locale.ROOT);
     }
 
     private UploadedImportFile validateAndReadFile(String sourceType, MultipartFile file) {
@@ -118,8 +119,8 @@ public class ImportJobUploadService {
         if (originalFilename == null || originalFilename.isBlank()) {
             throw new IllegalArgumentException("file name is required");
         }
-        if (ImportSourceTypes.ALIPAY_CSV.equals(sourceType) && !originalFilename.toLowerCase().endsWith(".csv")) {
-            throw new IllegalArgumentException("ALIPAY_CSV file must use .csv extension");
+        if (!originalFilename.toLowerCase(Locale.ROOT).endsWith(".csv")) {
+            throw new IllegalArgumentException(sourceType + " file must use .csv extension");
         }
 
         try {
