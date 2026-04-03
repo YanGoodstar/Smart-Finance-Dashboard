@@ -10,6 +10,9 @@ import java.util.List;
 public record DashboardOverviewResponse(
         DashboardSummaryResponse summary,
         List<DashboardCategoryBreakdownResponse> categoryBreakdowns,
-        TransactionPageResponse recentTransactions
+        TransactionPageResponse recentTransactions,
+        List<DashboardTrendPointResponse> trendPoints,
+        DashboardBudgetAlertResponse budgetAlert,
+        DashboardUnclassifiedSummaryResponse unclassifiedSummary
 ) {
 }

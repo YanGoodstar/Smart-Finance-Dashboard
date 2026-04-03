@@ -6,6 +6,7 @@ import com.smartfinance.dashboard.module.budget.dto.BudgetListResponse;
 import com.smartfinance.dashboard.module.budget.dto.BudgetProgressResponse;
 import com.smartfinance.dashboard.module.budget.dto.BudgetResponse;
 import com.smartfinance.dashboard.module.budget.dto.BudgetSaveRequest;
+import com.smartfinance.dashboard.module.budget.enums.BudgetWarningLevel;
 import com.smartfinance.dashboard.module.budget.entity.BudgetPlan;
 import com.smartfinance.dashboard.module.budget.mapper.BudgetPlanMapper;
 import com.smartfinance.dashboard.module.transaction.entity.TransactionRecord;
@@ -99,14 +100,19 @@ public class BudgetServiceImpl implements BudgetService {
         Map<String, BigDecimal> spentByCategory = buildSpentByCategory(expenseRecords);
         List<BudgetCategoryProgressResponse> allItems = buildCategoryProgressItems(categoryPlans, spentByCategory);
         List<BudgetCategoryProgressResponse> pagedItems = paginate(allItems, page, size);
-        BigDecimal totalBudget = resolveTotalBudget(plans, categoryPlans, finalCategory);
+        BudgetConfiguration budgetConfiguration = resolveBudgetConfiguration(plans, categoryPlans, finalCategory);
+        BigDecimal totalBudget = budgetConfiguration.budgetAmount();
+        BigDecimal usageRate = calculateUsageRate(totalSpent, totalBudget, budgetConfiguration.configured());
+        BudgetWarningLevel warningLevel = resolveWarningLevel(usageRate, budgetConfiguration.configured());
 
         return new BudgetProgressResponse(
                 resolvedBudgetMonth,
                 totalBudget,
                 totalSpent,
-                totalBudget.subtract(totalSpent),
-                calculateUsageRate(totalSpent, totalBudget),
+                calculateRemainingAmount(totalBudget, totalSpent, budgetConfiguration.configured()),
+                usageRate,
+                budgetConfiguration.configured(),
+                warningLevel,
                 pagedItems,
                 allItems.size(),
                 page,
@@ -223,12 +229,14 @@ public class BudgetServiceImpl implements BudgetService {
         List<BudgetCategoryProgressResponse> items = new ArrayList<>();
         for (BudgetPlan plan : categoryPlans) {
             BigDecimal actualSpent = spentByCategory.getOrDefault(plan.getCategory(), BigDecimal.ZERO);
+            BigDecimal usageRate = calculateUsageRate(actualSpent, plan.getAmount(), true);
             items.add(new BudgetCategoryProgressResponse(
                     toApiCategory(plan.getCategory()),
                     plan.getAmount(),
                     actualSpent,
                     plan.getAmount().subtract(actualSpent),
-                    calculateUsageRate(actualSpent, plan.getAmount())
+                    usageRate,
+                    resolveWarningLevel(usageRate, true)
             ));
         }
         return items;
@@ -244,7 +252,7 @@ public class BudgetServiceImpl implements BudgetService {
         return items.subList(fromIndex, toIndex);
     }
 
-    private BigDecimal resolveTotalBudget(
+    private BudgetConfiguration resolveBudgetConfiguration(
             List<BudgetPlan> allPlans,
             List<BudgetPlan> categoryPlans,
             String finalCategory
@@ -252,14 +260,18 @@ public class BudgetServiceImpl implements BudgetService {
         if (finalCategory != null && !finalCategory.isBlank()) {
             return categoryPlans.stream()
                     .findFirst()
-                    .map(BudgetPlan::getAmount)
-                    .orElse(BigDecimal.ZERO);
+                    .map(plan -> new BudgetConfiguration(true, plan.getAmount()))
+                    .orElseGet(() -> new BudgetConfiguration(false, null));
         }
 
         for (BudgetPlan plan : allPlans) {
             if (isTotalCategory(plan.getCategory())) {
-                return plan.getAmount();
+                return new BudgetConfiguration(true, plan.getAmount());
             }
+        }
+
+        if (categoryPlans.isEmpty()) {
+            return new BudgetConfiguration(false, null);
         }
 
         BigDecimal total = BigDecimal.ZERO;
@@ -268,14 +280,37 @@ public class BudgetServiceImpl implements BudgetService {
                 total = total.add(plan.getAmount());
             }
         }
-        return total;
+        return new BudgetConfiguration(true, total);
     }
 
-    private BigDecimal calculateUsageRate(BigDecimal actualSpent, BigDecimal budgetAmount) {
-        if (budgetAmount == null || BigDecimal.ZERO.compareTo(budgetAmount) == 0) {
-            return BigDecimal.ZERO;
+    private BigDecimal calculateUsageRate(BigDecimal actualSpent, BigDecimal budgetAmount, boolean configured) {
+        if (!configured || budgetAmount == null) {
+            return null;
+        }
+        if (BigDecimal.ZERO.compareTo(budgetAmount) == 0) {
+            return actualSpent.compareTo(BigDecimal.ZERO) > 0 ? BigDecimal.ONE : BigDecimal.ZERO;
         }
         return actualSpent.divide(budgetAmount, 4, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateRemainingAmount(BigDecimal totalBudget, BigDecimal totalSpent, boolean configured) {
+        if (!configured || totalBudget == null) {
+            return null;
+        }
+        return totalBudget.subtract(totalSpent);
+    }
+
+    private BudgetWarningLevel resolveWarningLevel(BigDecimal usageRate, boolean configured) {
+        if (!configured || usageRate == null) {
+            return null;
+        }
+        if (usageRate.compareTo(BigDecimal.ONE) >= 0) {
+            return BudgetWarningLevel.OVER_BUDGET;
+        }
+        if (usageRate.compareTo(new BigDecimal("0.8")) >= 0) {
+            return BudgetWarningLevel.NEAR_LIMIT;
+        }
+        return BudgetWarningLevel.NORMAL;
     }
 
     private BudgetResponse toResponse(BudgetPlan entity) {
@@ -298,5 +333,8 @@ public class BudgetServiceImpl implements BudgetService {
 
     private boolean isTotalCategory(String storedCategory) {
         return TOTAL_CATEGORY.equals(storedCategory);
+    }
+
+    private record BudgetConfiguration(boolean configured, BigDecimal budgetAmount) {
     }
 }

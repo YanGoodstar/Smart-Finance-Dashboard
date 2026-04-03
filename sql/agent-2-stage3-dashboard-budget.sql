@@ -1,0 +1,34 @@
+-- Agent-2 Stage 3 local notes for dashboard, budget, and rule enhancements.
+-- No new DDL is introduced in this round.
+--
+-- Dashboard overview additions:
+-- 1. trendPoints: daily aggregation using existing transaction filters
+-- 2. budgetAlert: reuses budget progress semantics for the same filters
+-- 3. unclassifiedSummary: counts only records where final_category is the built-in unclassified label
+--
+-- Budget progress additions:
+-- 1. warning levels:
+--    NORMAL
+--    NEAR_LIMIT
+--    OVER_BUDGET
+-- 2. thresholds:
+--    usageRate < 0.8      -> NORMAL
+--    usageRate >= 0.8
+--      and < 1.0          -> NEAR_LIMIT
+--    usageRate >= 1.0     -> OVER_BUDGET
+-- 3. when no matching budget configuration exists:
+--    configured = false
+--    warningLevel = NULL
+--
+-- Rule defaults additions:
+-- 1. WECHAT_CSV built-in rules are added in:
+--    src/main/resources/rule-defaults/default-category-rules.json
+-- 2. These rules only affect future imported WECHAT_CSV transactions.
+-- 3. No historical transaction backfill is executed in this round.
+--
+-- Integration checklist:
+-- 1. Import a WECHAT_CSV file through POST /api/import-jobs/upload
+-- 2. Confirm imported transactions can be auto-classified through existing rule service flow
+-- 3. Call GET /api/dashboard/overview with existing filter params
+--    and verify trendPoints, budgetAlert, unclassifiedSummary are present
+-- 4. Call GET /api/budgets/progress and verify configured and warningLevel are present

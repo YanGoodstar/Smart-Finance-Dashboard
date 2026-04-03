@@ -2,9 +2,15 @@ package com.smartfinance.dashboard.module.dashboard;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.smartfinance.dashboard.module.budget.BudgetService;
+import com.smartfinance.dashboard.module.budget.dto.BudgetProgressResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardCategoryBreakdownResponse;
+import com.smartfinance.dashboard.module.dashboard.dto.DashboardBudgetAlertResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardOverviewResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardSummaryResponse;
+import com.smartfinance.dashboard.module.dashboard.dto.DashboardTrendPointResponse;
+import com.smartfinance.dashboard.module.dashboard.dto.DashboardUnclassifiedSummaryResponse;
+import com.smartfinance.dashboard.module.rule.classification.dto.TransactionClassificationResult;
 import com.smartfinance.dashboard.module.transaction.dto.TransactionPageResponse;
 import com.smartfinance.dashboard.module.transaction.dto.TransactionQueryRequest;
 import com.smartfinance.dashboard.module.transaction.dto.TransactionSummaryResponse;
@@ -19,6 +25,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.util.TreeMap;
 
 /**
  * Dashboard aggregation implementation based on frozen transaction query semantics.
@@ -27,9 +35,14 @@ import java.util.Map;
 public class DashboardServiceImpl implements DashboardService {
 
     private final TransactionRecordMapper transactionRecordMapper;
+    private final BudgetService budgetService;
 
-    public DashboardServiceImpl(TransactionRecordMapper transactionRecordMapper) {
+    public DashboardServiceImpl(
+            TransactionRecordMapper transactionRecordMapper,
+            BudgetService budgetService
+    ) {
         this.transactionRecordMapper = transactionRecordMapper;
+        this.budgetService = budgetService;
     }
 
     @Override
@@ -37,12 +50,28 @@ public class DashboardServiceImpl implements DashboardService {
         List<TransactionRecord> records = transactionRecordMapper.selectList(
                 buildFilterWrapper(request)
         );
+        List<TransactionRecord> unclassifiedRecords = transactionRecordMapper.selectList(
+                buildFilterWrapper(copyForUnclassifiedSummary(request))
+        );
         TransactionPageResponse recentTransactions = queryRecentTransactions(request);
+        BudgetProgressResponse budgetProgress = budgetService.getBudgetProgress(
+                null,
+                0,
+                1,
+                request.getDateFrom(),
+                request.getDateTo(),
+                request.getFinalCategory(),
+                request.getCategorySource(),
+                request.getKeyword()
+        );
 
         return new DashboardOverviewResponse(
                 buildSummary(records),
                 buildCategoryBreakdowns(records),
-                recentTransactions
+                recentTransactions,
+                buildTrendPoints(records),
+                buildBudgetAlert(budgetProgress),
+                buildUnclassifiedSummary(unclassifiedRecords)
         );
     }
 
@@ -103,6 +132,66 @@ public class DashboardServiceImpl implements DashboardService {
         );
     }
 
+    private List<DashboardTrendPointResponse> buildTrendPoints(List<TransactionRecord> records) {
+        Map<LocalDate, TrendBucket> buckets = new TreeMap<>();
+        for (TransactionRecord record : records) {
+            if (record.getTransactionDate() == null || record.getAmount() == null || record.getDirection() == null) {
+                continue;
+            }
+            TrendBucket bucket = buckets.computeIfAbsent(record.getTransactionDate(), ignored -> new TrendBucket());
+            if (record.getDirection() == TransactionDirection.INCOME) {
+                bucket.incomeAmount = bucket.incomeAmount.add(record.getAmount());
+            } else if (record.getDirection() == TransactionDirection.EXPENSE) {
+                bucket.expenseAmount = bucket.expenseAmount.add(record.getAmount());
+            }
+        }
+
+        List<DashboardTrendPointResponse> items = new ArrayList<>(buckets.size());
+        for (Map.Entry<LocalDate, TrendBucket> entry : buckets.entrySet()) {
+            items.add(new DashboardTrendPointResponse(
+                    entry.getKey(),
+                    entry.getValue().incomeAmount,
+                    entry.getValue().expenseAmount,
+                    entry.getValue().incomeAmount.subtract(entry.getValue().expenseAmount)
+            ));
+        }
+        return items;
+    }
+
+    private DashboardBudgetAlertResponse buildBudgetAlert(BudgetProgressResponse budgetProgress) {
+        return new DashboardBudgetAlertResponse(
+                budgetProgress.configured(),
+                budgetProgress.warningLevel(),
+                budgetProgress.configured() ? budgetProgress.totalBudget() : null,
+                budgetProgress.totalSpent(),
+                budgetProgress.configured() ? budgetProgress.totalRemaining() : null,
+                budgetProgress.configured() ? budgetProgress.usageRate() : null
+        );
+    }
+
+    private DashboardUnclassifiedSummaryResponse buildUnclassifiedSummary(List<TransactionRecord> records) {
+        BigDecimal incomeAmount = BigDecimal.ZERO;
+        BigDecimal expenseAmount = BigDecimal.ZERO;
+
+        for (TransactionRecord record : records) {
+            if (record.getAmount() == null || record.getDirection() == null) {
+                continue;
+            }
+            if (record.getDirection() == TransactionDirection.INCOME) {
+                incomeAmount = incomeAmount.add(record.getAmount());
+            } else if (record.getDirection() == TransactionDirection.EXPENSE) {
+                expenseAmount = expenseAmount.add(record.getAmount());
+            }
+        }
+
+        return new DashboardUnclassifiedSummaryResponse(
+                !records.isEmpty(),
+                records.size(),
+                incomeAmount,
+                expenseAmount
+        );
+    }
+
     private List<DashboardCategoryBreakdownResponse> buildCategoryBreakdowns(List<TransactionRecord> records) {
         Map<String, CategoryBucket> buckets = new LinkedHashMap<>();
 
@@ -135,9 +224,26 @@ public class DashboardServiceImpl implements DashboardService {
         return items;
     }
 
+    private TransactionQueryRequest copyForUnclassifiedSummary(TransactionQueryRequest request) {
+        TransactionQueryRequest copiedRequest = new TransactionQueryRequest();
+        copiedRequest.setPage(0);
+        copiedRequest.setSize(request.getSize());
+        copiedRequest.setDateFrom(request.getDateFrom());
+        copiedRequest.setDateTo(request.getDateTo());
+        copiedRequest.setFinalCategory(TransactionClassificationResult.UNCLASSIFIED_CATEGORY);
+        copiedRequest.setCategorySource(request.getCategorySource());
+        copiedRequest.setKeyword(request.getKeyword());
+        return copiedRequest;
+    }
+
     private static final class CategoryBucket {
         private BigDecimal totalExpense = BigDecimal.ZERO;
         private long transactionCount;
+    }
+
+    private static final class TrendBucket {
+        private BigDecimal incomeAmount = BigDecimal.ZERO;
+        private BigDecimal expenseAmount = BigDecimal.ZERO;
     }
 
     private TransactionSummaryResponse toSummaryResponse(TransactionRecord record) {
