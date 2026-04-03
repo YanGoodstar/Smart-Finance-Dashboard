@@ -1,6 +1,10 @@
 package com.smartfinance.dashboard.module.rule;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.smartfinance.dashboard.module.rule.classification.ClassificationRuleCatalog;
+import com.smartfinance.dashboard.module.rule.classification.RuleClassificationService;
+import com.smartfinance.dashboard.module.rule.classification.dto.TransactionClassificationRequest;
+import com.smartfinance.dashboard.module.rule.classification.dto.TransactionClassificationResult;
 import com.smartfinance.dashboard.module.rule.dto.CategoryRuleListResponse;
 import com.smartfinance.dashboard.module.rule.dto.CategoryRuleResponse;
 import com.smartfinance.dashboard.module.rule.dto.CategoryRuleSaveRequest;
@@ -14,9 +18,17 @@ import java.util.List;
 public class RuleServiceImpl implements RuleService {
 
     private final CategoryRuleMapper categoryRuleMapper;
+    private final RuleClassificationService ruleClassificationService;
+    private final ClassificationRuleCatalog classificationRuleCatalog;
 
-    public RuleServiceImpl(CategoryRuleMapper categoryRuleMapper) {
+    public RuleServiceImpl(
+            CategoryRuleMapper categoryRuleMapper,
+            RuleClassificationService ruleClassificationService,
+            ClassificationRuleCatalog classificationRuleCatalog
+    ) {
         this.categoryRuleMapper = categoryRuleMapper;
+        this.ruleClassificationService = ruleClassificationService;
+        this.classificationRuleCatalog = classificationRuleCatalog;
     }
 
     @Override
@@ -24,6 +36,7 @@ public class RuleServiceImpl implements RuleService {
         CategoryRule entity = new CategoryRule();
         applyRequest(entity, request);
         categoryRuleMapper.insert(entity);
+        classificationRuleCatalog.refreshUserRules();
         return toResponse(entity);
     }
 
@@ -60,6 +73,7 @@ public class RuleServiceImpl implements RuleService {
         entity.setId(id);
         applyRequest(entity, request);
         categoryRuleMapper.updateById(entity);
+        classificationRuleCatalog.refreshUserRules();
         return toResponse(entity);
     }
 
@@ -69,7 +83,16 @@ public class RuleServiceImpl implements RuleService {
         if (entity == null) {
             return false;
         }
-        return categoryRuleMapper.deleteById(id) > 0;
+        boolean deleted = categoryRuleMapper.deleteById(id) > 0;
+        if (deleted) {
+            classificationRuleCatalog.refreshUserRules();
+        }
+        return deleted;
+    }
+
+    @Override
+    public TransactionClassificationResult classifyTransaction(TransactionClassificationRequest request) {
+        return ruleClassificationService.classify(request);
     }
 
     private void applyRequest(CategoryRule entity, CategoryRuleSaveRequest request) {

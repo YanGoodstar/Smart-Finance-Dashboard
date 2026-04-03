@@ -1,0 +1,29 @@
+-- Agent-2 Stage 2 local notes for rule classification.
+-- A2-21 ~ A2-23 do not introduce new DDL in this round.
+-- Existing category_rule remains the persistence entry for user-defined rules.
+-- Built-in default rules are loaded from:
+--   src/main/resources/rule-defaults/default-category-rules.json
+--
+-- Frozen matching semantics for Stage 2:
+-- 1. Rule matching is case-insensitive substring matching against:
+--    merchant_name + summary + raw_text
+-- 2. match_expression uses OR semantics.
+-- 3. Supported separators in match_expression:
+--    | , ; and line breaks
+-- 4. Active rule ordering:
+--    lower priority wins globally;
+--    if priority is the same, user rules win over default rules;
+--    ties fall back to longer keyword first, then stable order
+-- 5. Matched output:
+--    autoCategory = finalCategory = target_category
+--    categorySource = AUTO
+-- 6. Unmatched output:
+--    autoCategory = NULL
+--    finalCategory = the built-in unclassified label
+--    categorySource = UNCLASSIFIED
+-- 7. This capability is for future imported transactions only.
+--    No historical transaction backfill is executed in this round.
+--
+-- Optional local user-rule seed template for integration:
+-- INSERT INTO category_rule (rule_name, match_expression, target_category, priority, enabled)
+-- VALUES ('user-rule-name', 'keyword_a|keyword_b', '<existing-category>', 10, TRUE);
