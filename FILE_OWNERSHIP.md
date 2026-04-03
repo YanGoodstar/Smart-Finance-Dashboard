@@ -61,7 +61,7 @@
 | `src/main/java/com/smartfinance/dashboard/module/transaction/entity/TransactionRecord.java` | Agent-1 | shared-by-architect | 导入、看板、预算共同依赖的交易事实模型 |
 | `src/main/java/com/smartfinance/dashboard/module/transaction/enums/**` | Agent-1 | shared-by-architect | 交易方向与分类来源语义 |
 | `src/main/java/com/smartfinance/dashboard/module/transaction/dto/TransactionQueryRequest.java` | Agent-1 | shared-by-architect | 下游查询筛选共享 DTO |
-| `src/main/java/com/smartfinance/dashboard/module/rule/engine/**` | Agent-2 | shared-by-architect | 第二阶段冻结的分类服务输入输出契约 |
+| `src/main/java/com/smartfinance/dashboard/module/rule/classification/**` | Agent-2 | shared-by-architect | 第二阶段冻结的分类服务输入输出契约 |
 
 ## 锁移交流程
 

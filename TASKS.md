@@ -30,16 +30,16 @@
 | ID | 模块 | 任务 | 负责人 | 分支 | 状态 | 依赖 | 预计耗时 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | ARC-21 | 共享契约 | 冻结第二阶段上传接口、分类服务输入输出、未分类语义和疑似重复判定口径 | Architect | `yan` | done | none | 0.25d |
-| ARC-22 | 集成验证 | 复查双分支差异，解决共享契约冲突，完成第二阶段集成构建与联调 | Architect | `yan` | todo | A1-24, A2-24 | 0.5d |
+| ARC-22 | 集成验证 | 复查双分支差异，解决共享契约冲突，完成第二阶段集成构建与联调 | Architect | `yan` | review | A1-24, A2-24 | 0.5d |
 | ARC-23 | 共享 SQL / 文档 | 评估并合并两个 Agent 的局部 SQL、联调文档和运行说明 | Architect | `yan` | todo | A1-24, A2-24 | 0.25d |
-| A1-21 | 上传入口 | 新增账单文件上传接口与导入执行编排入口，完成 multipart 接收、文件校验、导入任务生命周期更新 | Agent-1 | `feature/agent-1-upload-parser` | todo | ARC-21 | 0.5d |
-| A1-22 | 解析器 | 建立解析器 SPI / 模板识别骨架，并落地 `ALIPAY_CSV` 解析器与标准化候选 DTO | Agent-1 | `feature/agent-1-upload-parser` | todo | A1-21 | 1.0d |
-| A1-23 | 入库执行 | 完成标准化交易入库、疑似重复识别、导入摘要统计回写，并串联 Agent-2 输出的分类服务 | Agent-1 | `feature/agent-1-upload-parser` | todo | A1-22, A2-22 | 1.0d |
-| A1-24 | 局部 SQL / 联调 | 输出第二阶段导入模块局部 SQL 与导入联调说明，收口 Agent-1 范围文档 | Agent-1 | `feature/agent-1-upload-parser` | todo | A1-23 | 0.5d |
-| A2-21 | 分类契约 | 建立默认规则目录、分类服务接口和输入输出 DTO，冻结供导入链路调用的分类契约 | Agent-2 | `feature/agent-2-rule-classification` | todo | ARC-21 | 0.5d |
-| A2-22 | 规则匹配 | 实现默认规则 + 用户规则命中逻辑、优先级排序、启停过滤和未分类回退语义 | Agent-2 | `feature/agent-2-rule-classification` | todo | A2-21 | 1.0d |
-| A2-23 | 规则集成 | 将分类服务接入现有 rule 模块服务层，保证新导入交易可复用该能力，且不回刷历史交易 | Agent-2 | `feature/agent-2-rule-classification` | todo | A2-22 | 0.75d |
-| A2-24 | 局部 SQL / 联调 | 输出第二阶段规则模块局部 SQL 或种子说明，并补充规则联调说明 | Agent-2 | `feature/agent-2-rule-classification` | todo | A2-23 | 0.25d |
+| A1-21 | 上传入口 | 新增账单文件上传接口与导入执行编排入口，完成 multipart 接收、文件校验、导入任务生命周期更新 | Agent-1 | `feature/agent-1-upload-parser` | done | ARC-21 | 0.5d |
+| A1-22 | 解析器 | 建立解析器 SPI / 模板识别骨架，并落地 `ALIPAY_CSV` 解析器与标准化候选 DTO | Agent-1 | `feature/agent-1-upload-parser` | done | A1-21 | 1.0d |
+| A1-23 | 入库执行 | 完成标准化交易入库、疑似重复识别、导入摘要统计回写，并串联 Agent-2 输出的分类服务 | Agent-1 | `feature/agent-1-upload-parser` | done | A1-22, A2-21 | 1.0d |
+| A1-24 | 局部 SQL / 联调 | 输出第二阶段导入模块局部 SQL 与导入联调说明，收口 Agent-1 范围文档 | Agent-1 | `feature/agent-1-upload-parser` | done | A1-23 | 0.5d |
+| A2-21 | 分类契约 | 建立默认规则目录、分类服务接口和输入输出 DTO，冻结供导入链路调用的分类契约 | Agent-2 | `feature/agent-2-rule-classification` | done | ARC-21 | 0.5d |
+| A2-22 | 规则匹配 | 实现默认规则 + 用户规则命中逻辑、优先级排序、启停过滤和未分类回退语义 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-21 | 1.0d |
+| A2-23 | 规则集成 | 将分类服务接入现有 rule 模块服务层，保证新导入交易可复用该能力，且不回刷历史交易 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-22 | 0.75d |
+| A2-24 | 局部 SQL / 联调 | 输出第二阶段规则模块局部 SQL 或种子说明，并补充规则联调说明 | Agent-2 | `feature/agent-2-rule-classification` | done | A2-23 | 0.25d |
 
 ## 冻结的第二阶段共享契约
 
