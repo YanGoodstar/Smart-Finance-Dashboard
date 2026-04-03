@@ -1,19 +1,16 @@
 package com.smartfinance.dashboard.module.transaction;
 
 import com.smartfinance.dashboard.module.transaction.dto.TransactionPageResponse;
-import com.smartfinance.dashboard.module.transaction.enums.CategorySource;
-
-import java.time.LocalDate;
+import com.smartfinance.dashboard.module.transaction.dto.TransactionQueryRequest;
+import com.smartfinance.dashboard.module.transaction.dto.UpdateTransactionCategoryRequest;
+import com.smartfinance.dashboard.module.transaction.dto.UpdateTransactionCategoryResponse;
 
 public interface TransactionQueryService {
 
-    TransactionPageResponse queryTransactions(
-            int page,
-            int size,
-            LocalDate dateFrom,
-            LocalDate dateTo,
-            String finalCategory,
-            CategorySource categorySource,
-            String keyword
+    TransactionPageResponse queryTransactions(TransactionQueryRequest request);
+
+    UpdateTransactionCategoryResponse updateTransactionCategory(
+            Long transactionId,
+            UpdateTransactionCategoryRequest request
     );
 }

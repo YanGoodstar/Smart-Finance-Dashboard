@@ -19,6 +19,12 @@ public class ImportJob {
     @TableField("status")
     private ImportJobStatus status;
 
+    @TableField("total_count")
+    private Integer totalCount;
+
+    @TableField("processed_count")
+    private Integer processedCount;
+
     @TableField("success_count")
     private Integer successCount;
 
@@ -65,6 +71,22 @@ public class ImportJob {
 
     public void setStatus(ImportJobStatus status) {
         this.status = status;
+    }
+
+    public Integer getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Integer totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public Integer getProcessedCount() {
+        return processedCount;
+    }
+
+    public void setProcessedCount(Integer processedCount) {
+        this.processedCount = processedCount;
     }
 
     public Integer getSuccessCount() {
