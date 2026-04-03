@@ -2,7 +2,7 @@ package com.smartfinance.dashboard.module.dashboard;
 
 import com.smartfinance.dashboard.common.api.ApiResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardOverviewResponse;
-import com.smartfinance.dashboard.module.dashboard.dto.TransactionQueryRequest;
+import com.smartfinance.dashboard.module.transaction.dto.TransactionQueryRequest;
 import com.smartfinance.dashboard.module.transaction.enums.CategorySource;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -39,16 +39,17 @@ public class DashboardController {
             @RequestParam(required = false) CategorySource categorySource,
             @RequestParam(required = false) String keyword
     ) {
+        TransactionQueryRequest request = new TransactionQueryRequest();
+        request.setPage(page);
+        request.setSize(size);
+        request.setDateFrom(dateFrom);
+        request.setDateTo(dateTo);
+        request.setFinalCategory(finalCategory);
+        request.setCategorySource(categorySource);
+        request.setKeyword(keyword);
+
         return ApiResponse.success(
-                dashboardService.getOverview(new TransactionQueryRequest(
-                        page,
-                        size,
-                        dateFrom,
-                        dateTo,
-                        finalCategory,
-                        categorySource,
-                        keyword
-                ))
+                dashboardService.getOverview(request)
         );
     }
 }

@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardCategoryBreakdownResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardOverviewResponse;
 import com.smartfinance.dashboard.module.dashboard.dto.DashboardSummaryResponse;
-import com.smartfinance.dashboard.module.dashboard.dto.TransactionQueryRequest;
 import com.smartfinance.dashboard.module.transaction.dto.TransactionPageResponse;
+import com.smartfinance.dashboard.module.transaction.dto.TransactionQueryRequest;
 import com.smartfinance.dashboard.module.transaction.dto.TransactionSummaryResponse;
 import com.smartfinance.dashboard.module.transaction.entity.TransactionRecord;
 import com.smartfinance.dashboard.module.transaction.enums.TransactionDirection;
@@ -48,23 +48,23 @@ public class DashboardServiceImpl implements DashboardService {
 
     private LambdaQueryWrapper<TransactionRecord> buildFilterWrapper(TransactionQueryRequest request) {
         LambdaQueryWrapper<TransactionRecord> wrapper = new LambdaQueryWrapper<>();
-        if (request.dateFrom() != null) {
-            wrapper.ge(TransactionRecord::getTransactionDate, request.dateFrom());
+        if (request.getDateFrom() != null) {
+            wrapper.ge(TransactionRecord::getTransactionDate, request.getDateFrom());
         }
-        if (request.dateTo() != null) {
-            wrapper.le(TransactionRecord::getTransactionDate, request.dateTo());
+        if (request.getDateTo() != null) {
+            wrapper.le(TransactionRecord::getTransactionDate, request.getDateTo());
         }
-        if (request.finalCategory() != null && !request.finalCategory().isBlank()) {
-            wrapper.eq(TransactionRecord::getFinalCategory, request.finalCategory().trim());
+        if (request.getFinalCategory() != null && !request.getFinalCategory().isBlank()) {
+            wrapper.eq(TransactionRecord::getFinalCategory, request.getFinalCategory().trim());
         }
-        if (request.categorySource() != null) {
-            wrapper.eq(TransactionRecord::getCategorySource, request.categorySource());
+        if (request.getCategorySource() != null) {
+            wrapper.eq(TransactionRecord::getCategorySource, request.getCategorySource());
         }
-        if (request.keyword() != null && !request.keyword().isBlank()) {
+        if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
             wrapper.and(query -> query
-                    .like(TransactionRecord::getMerchantName, request.keyword())
+                    .like(TransactionRecord::getMerchantName, request.getKeyword())
                     .or()
-                    .like(TransactionRecord::getSummary, request.keyword()));
+                    .like(TransactionRecord::getSummary, request.getKeyword()));
         }
         wrapper.orderByDesc(TransactionRecord::getTransactionDate)
                 .orderByDesc(TransactionRecord::getId);
@@ -72,12 +72,12 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private TransactionPageResponse queryRecentTransactions(TransactionQueryRequest request) {
-        Page<TransactionRecord> pageRequest = Page.of(request.page() + 1L, request.size());
+        Page<TransactionRecord> pageRequest = Page.of(request.getPage() + 1L, request.getSize());
         Page<TransactionRecord> resultPage = transactionRecordMapper.selectPage(pageRequest, buildFilterWrapper(request));
         List<TransactionSummaryResponse> items = resultPage.getRecords().stream()
                 .map(this::toSummaryResponse)
                 .toList();
-        return new TransactionPageResponse(items, resultPage.getTotal(), request.page(), request.size());
+        return new TransactionPageResponse(items, resultPage.getTotal(), request.getPage(), request.getSize());
     }
 
     private DashboardSummaryResponse buildSummary(List<TransactionRecord> records) {
