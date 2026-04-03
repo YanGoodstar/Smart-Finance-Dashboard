@@ -46,5 +46,53 @@
     "targetCategory": "\u5A31\u4E50\u4F11\u95F2",
     "priority": 150,
     "enabled": true
+  },
+  {
+    "ruleName": "wechat-food-delivery",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u7F8E\u56E2\u5916\u5356|\u9EA6\u5F53\u52B3|\u80AF\u5FB7\u57FA|\u745E\u5E78|\u661F\u5DF4\u514B|\u559C\u8336|\u5948\u96EA",
+    "targetCategory": "\u9910\u996E",
+    "priority": 100,
+    "enabled": true
+  },
+  {
+    "ruleName": "wechat-transportation",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u6EF4\u6EF4\u51FA\u884C|\u9AD8\u5FB7\u6253\u8F66|\u66F9\u64CD\u51FA\u884C|\u5730\u94C1|\u516C\u4EA4|12306",
+    "targetCategory": "\u4EA4\u901A",
+    "priority": 110,
+    "enabled": true
+  },
+  {
+    "ruleName": "wechat-shopping",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u4EAC\u4E1C|\u62FC\u591A\u591A|\u552F\u54C1\u4F1A|\u5FAE\u5E97|\u5C0F\u7A0B\u5E8F\u5546\u57CE",
+    "targetCategory": "\u8D2D\u7269",
+    "priority": 120,
+    "enabled": true
+  },
+  {
+    "ruleName": "wechat-daily-home",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u6C83\u5C14\u739B|\u76D2\u9A6C|\u6C38\u8F89|\u7269\u7F8E|\u5927\u6DA6\u53D1|\u4FBF\u5229\u5E97",
+    "targetCategory": "\u5C45\u5BB6\u65E5\u7528",
+    "priority": 130,
+    "enabled": true
+  },
+  {
+    "ruleName": "wechat-healthcare",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u533B\u9662|\u836F\u623F|\u836F\u5E97|\u8BCA\u6240|\u5065\u5EB7",
+    "targetCategory": "\u533B\u7597\u5065\u5EB7",
+    "priority": 140,
+    "enabled": true
+  },
+  {
+    "ruleName": "wechat-entertainment",
+    "sourceType": "WECHAT_CSV",
+    "matchExpression": "\u732B\u773C|\u6F14\u51FA|\u7535\u5F71|\u6E38\u620F|\u817E\u8BAF\u89C6\u9891|\u7231\u5947\u827A|\u7F51\u6613\u4E91\u97F3\u4E50",
+    "targetCategory": "\u5A31\u4E50\u4F11\u95F2",
+    "priority": 150,
+    "enabled": true
   }
 ]
