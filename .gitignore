@@ -25,3 +25,11 @@ replay_pid*
 
 # Local git worktrees
 .worktrees/
+
+# Maven local cache and build outputs
+target/
+
+# Local deployment environment files
+.env
+.env.*
+!.env.example
